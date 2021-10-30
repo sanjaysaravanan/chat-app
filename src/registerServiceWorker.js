@@ -18,6 +18,8 @@ const isLocalhost = Boolean(
     ),
 );
 
+/* eslint-disable no-param-reassign, no-console */
+
 function registerValidSW(swUrl) {
   navigator.serviceWorker
     .register(swUrl)
