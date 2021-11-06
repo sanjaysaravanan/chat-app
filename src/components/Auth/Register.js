@@ -14,8 +14,20 @@ import {
 } from 'semantic-ui-react';
 
 const Register = () => {
-  const [registerState, setState] = useState(null);
-  const handleChange = () => {};
+  const [state, setState] = useState({
+    username: '',
+    password: '',
+    passfwordconfirmation: '',
+    email: '',
+
+  });
+  const handleChange = (e) => {
+    setState({ ...state, [e.target.name]: e.target.value });
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+  };
 
   return (
     <Grid textAlign="center" verticalAlign="middle" className="app">
@@ -24,7 +36,7 @@ const Register = () => {
           <Icon name="puzzle piece" color="orange" />
           Register for Developer Chat
         </Header>
-        <Form size="large">
+        <Form size="large" onSubmit={handleSubmit}>
           <Segment stacked>
             <Form.Input
               fluid
