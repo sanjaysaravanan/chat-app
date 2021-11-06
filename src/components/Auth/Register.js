@@ -2,7 +2,6 @@
 
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-
 import {
   Grid,
   Form,
@@ -12,21 +11,81 @@ import {
   Message,
   Icon,
 } from 'semantic-ui-react';
+import { getAuth, createUserWithEmailAndPassword } from 'firebase/auth';
+import { app } from '../../firebase';
 
 const Register = () => {
   const [state, setState] = useState({
     username: '',
     password: '',
-    passfwordconfirmation: '',
+    passwordConfirmation: '',
     email: '',
-
+    errors: [],
   });
   const handleChange = (e) => {
     setState({ ...state, [e.target.name]: e.target.value });
   };
 
+  const displayErrors = (errors) => errors.map(
+    (error) => <p key={error.message}>{error.message}</p>,
+  );
+
+  const isFormEmpty = ({
+    username, email, password, passwordConfirmation,
+  }) => !username.length || !email.length || !password.length || !passwordConfirmation.length;
+
+  const isPasswordValid = ({ password, passwordConfirmation }) => {
+    if (password.length < 6 || passwordConfirmation.length < 6) {
+      return false;
+    }
+    if (password !== passwordConfirmation) {
+      return false;
+    }
+    return true;
+  };
+
+  const isFromValid = () => {
+    const errors = [];
+    let error;
+
+    if (isFormEmpty(state)) {
+      error = { message: 'Fill all the fields' };
+      setState({ ...state, errors: errors.concat(error) });
+      return false;
+    } if (!isPasswordValid(state)) {
+      error = { message: 'Password is invalid' };
+      setState({ ...state, errors: errors.concat(error) });
+      return false;
+    }
+    setState({ ...state, errors: [] });
+    return true;
+  };
+
+  const resetForm = () => {
+    setState({
+      username: '',
+      password: '',
+      passwordConfirmation: '',
+      email: '',
+      errors: [],
+    });
+  };
+
   const handleSubmit = (e) => {
     e.preventDefault();
+    if (isFromValid()) {
+      const auth = getAuth(app);
+      createUserWithEmailAndPassword(auth, state.email, state.password)
+        .then((createdUser) => {
+          // eslint-disable-next-line
+          console.log(createdUser);
+          resetForm();
+        })
+        .catch((err) => {
+        // eslint-disable-next-line
+        console.log(err)
+        });
+    }
   };
 
   return (
@@ -45,6 +104,7 @@ const Register = () => {
               iconPosition="left"
               placeholder="Username"
               onChange={handleChange}
+              value={state.username}
               type="text"
             />
             <Form.Input
@@ -54,6 +114,7 @@ const Register = () => {
               iconPosition="left"
               placeholder="Email Address"
               onChange={handleChange}
+              value={state.email}
               type="email"
             />
             <Form.Input
@@ -63,6 +124,7 @@ const Register = () => {
               iconPosition="left"
               placeholder="Password"
               onChange={handleChange}
+              value={state.password}
               type="password"
             />
             <Form.Input
@@ -72,6 +134,7 @@ const Register = () => {
               iconPosition="left"
               placeholder="Password Confirmation "
               onChange={handleChange}
+              value={state.passwordConfirmation}
               type="password"
             />
             <Button color="orange" fluid size="large">
@@ -79,6 +142,12 @@ const Register = () => {
             </Button>
           </Segment>
         </Form>
+        {state.errors.length > 0 && (
+          <Message error>
+            <h3>Error</h3>
+            {displayErrors(state.errors)}
+          </Message>
+        )}
         <Message>
           Already a user?
           {' '}
